@@ -1,3 +1,5 @@
+// versione 1.2
+
 #include "LEDController.h"
 #include <math.h>
 
@@ -7,14 +9,8 @@ LEDController::LEDController(uint8_t ledPins[], uint8_t count)
       _blinkInterval(150), _rotationSpeed(150), _fadeSpeed(30), _voiceFactor(1.0)
 {
     if (_count > MAX_LEDS) _count = MAX_LEDS;
-
     for (uint8_t i = 0; i < _count; i++) {
         _pins[i] = ledPins[i];
-        _nextUpdate[i] = millis();
-        _modInterval[i] = random(50, 300);
-        _targetValue[i] = random(50, 255);
-        _currentValue[i] = 0;
-        _direction[i] = 1;
     }
 }
 
@@ -58,10 +54,11 @@ void LEDController::update() {
         case ROTATE:       rotate(); break;
         case FADE:         fade(); break;
         case VOICE_SIM:    voiceSim(); break;
-        case RANDOM_MODULATION: randomModulation(); break;
         default: break;
     }
 }
+
+// ... implementazioni aggiornate
 
 void LEDController::randomBlink() {
     if (millis() - _lastUpdate > _blinkInterval) {
@@ -102,24 +99,5 @@ void LEDController::voiceSim() {
             analogWrite(_pins[i], value);
         }
         _lastUpdate = millis();
-    }
-}
-
-void LEDController::randomModulation() {
-    unsigned long now = millis();
-    for (uint8_t i = 0; i < _count; i++) {
-        if (now >= _nextUpdate[i]) {
-            _currentValue[i] += _direction[i];
-            if ((_direction[i] > 0 && _currentValue[i] >= _targetValue[i]) ||
-                (_direction[i] < 0 && _currentValue[i] <= _targetValue[i])) {
-                _direction[i] = -_direction[i];
-                if (_direction[i] > 0) {
-                    _targetValue[i] = random(50, 255);
-                    _modInterval[i] = random(60, 300);
-                }
-            }
-            analogWrite(_pins[i], _currentValue[i]);
-            _nextUpdate[i] = now + _modInterval[i];
-        }
     }
 }
